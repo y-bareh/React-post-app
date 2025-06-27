@@ -8,3 +8,10 @@
 
 
 *It took 30 minutes to setup expo, and 1 hour and 35 minutes to finish this project
+
+![Screenshot 1](./ss1.jpg)
+![Screenshot 2](./ss2.jpg)
+![Screenshot 3](./ss3.jpg)
+![Screenshot 4](./ss4.jpg)
+![Screenshot 5](./ss5.jpg)
+![Screenshot 6](./ss6.jpg)
