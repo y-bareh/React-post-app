@@ -1,75 +1,268 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import React, { useState, useEffect } from 'react';
+import { 
+  FlatList, 
+  StyleSheet, 
+  RefreshControl, 
+  Text, 
+  View,
+  Alert,
+  StatusBar,
+  SafeAreaView
+} from 'react-native';
+import { router } from 'expo-router';
+import * as Haptics from 'expo-haptics';
+import { PostWithUser, fetchValidPostsWithUsers } from '@/services/api';
+import PostCard from '@/components/PostCard';
+import LoadingSpinner from '@/components/LoadingSpinner';
+import FloatingActionButton from '@/components/FloatingActionButton';
+import SimpleHeader from '@/components/SimpleHeader';
+import { PostCardSkeleton } from '@/components/SkeletonLoader';
+import { useSavedPosts } from '@/contexts/SavedPostsContext';
+import { AppTheme } from '@/constants/Theme';
 
 export default function HomeScreen() {
+  const [posts, setPosts] = useState<PostWithUser[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [page, setPage] = useState(1);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [activeTab, setActiveTab] = useState<'home' | 'saved'>('home');
+  
+  const { savedPosts } = useSavedPosts();
+
+  useEffect(() => {
+    loadPosts();
+  }, []);
+
+  const loadPosts = async (pageNum: number = 1, isRefresh: boolean = false) => {
+    try {
+      if (!isRefresh && pageNum === 1) {
+        setLoading(true);
+      } else if (!isRefresh) {
+        setLoadingMore(true);
+      }
+
+      const newPosts = await fetchValidPostsWithUsers(pageNum);
+      
+      if (isRefresh || pageNum === 1) {
+        setPosts(newPosts);
+        setPage(2);
+      } else {
+        setPosts(prevPosts => [...prevPosts, ...newPosts]);
+        setPage(pageNum + 1);
+      }
+
+      setHasMore(newPosts.length > 0);
+    } catch (error) {
+      console.error('Error loading posts:', error);
+      Alert.alert('Error', 'Failed to load posts. Please try again.');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+      setLoadingMore(false);
+    }
+  };
+
+  const handleRefresh = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setRefreshing(true);
+    setPage(1);
+    setHasMore(true);
+    loadPosts(1, true);
+  };
+
+  const handleLoadMore = () => {
+    if (!loadingMore && hasMore) {
+      loadPosts(page);
+    }
+  };
+
+  const handleTabChange = (tab: 'home' | 'saved') => {
+    setActiveTab(tab);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  };
+
+  const getCurrentPosts = () => {
+    return activeTab === 'home' ? posts : savedPosts;
+  };
+
+  const handleNewPost = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    Alert.alert('New Post', 'Create new post feature coming soon!');
+  };
+
+  const handlePostPress = (postId: number) => {
+    router.push({
+      pathname: '/post-details' as any,
+      params: { id: postId.toString() }
+    });
+  };
+
+  const renderHeader = () => (
+    <View style={styles.header}>
+      <Text style={styles.headerTitle}>
+        {activeTab === 'home' ? 'Latest Posts' : 'Saved Posts'}
+      </Text>
+      <Text style={styles.headerSubtitle}>
+        {activeTab === 'home' 
+          ? 'Discover amazing content from our community'
+          : `You have ${savedPosts.length} saved posts`
+        }
+      </Text>
+    </View>
+  );
+
+  const renderFooter = () => {
+    if (!loadingMore) return <View style={styles.footerSpacing} />;
+    return (
+      <View style={styles.footer}>
+        <LoadingSpinner size="small" />
+        <Text style={styles.loadingText}>Loading more posts...</Text>
+      </View>
+    );
+  };
+
+  const renderEmptyComponent = () => (
+    <View style={styles.emptyContainer}>
+      <Text style={styles.emptyIcon}>
+        {activeTab === 'home' ? '📝' : '🔖'}
+      </Text>
+      <Text style={styles.emptyTitle}>
+        {activeTab === 'home' ? 'No posts yet' : 'No saved posts'}
+      </Text>
+      <Text style={styles.emptyText}>
+        {activeTab === 'home' 
+          ? 'Be the first to share something amazing!'
+          : 'Start saving posts by tapping the bookmark icon!'
+        }
+      </Text>
+    </View>
+  );
+
+  const renderSeparator = () => <View style={styles.separator} />;
+
+  if (loading && activeTab === 'home') {
+    return (
+      <SafeAreaView style={styles.container}>
+        <StatusBar backgroundColor={AppTheme.colors.primary} barStyle="light-content" />
+        <SimpleHeader activeTab={activeTab} onTabChange={handleTabChange} />
+        {renderHeader()}
+        <View style={styles.skeletonContainer}>
+          {Array.from({ length: 5 }).map((_, index) => (
+            <PostCardSkeleton key={index} />
+          ))}
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  const currentPosts = getCurrentPosts();
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <SafeAreaView style={styles.container}>
+      <StatusBar backgroundColor={AppTheme.colors.primary} barStyle="light-content" />
+      <SimpleHeader activeTab={activeTab} onTabChange={handleTabChange} />
+      <FlatList
+        data={currentPosts}
+        keyExtractor={(item) => `${activeTab}-${item.id}`}
+        renderItem={({ item }) => (
+          <PostCard post={item} onPress={handlePostPress} />
+        )}
+        refreshControl={
+          activeTab === 'home' ? (
+            <RefreshControl 
+              refreshing={refreshing} 
+              onRefresh={handleRefresh}
+              colors={[AppTheme.colors.primary]}
+              tintColor={AppTheme.colors.primary}
+            />
+          ) : undefined
+        }
+        onEndReached={activeTab === 'home' ? handleLoadMore : undefined}
+        onEndReachedThreshold={0.1}
+        ListHeaderComponent={renderHeader}
+        ListFooterComponent={activeTab === 'home' ? renderFooter : undefined}
+        ListEmptyComponent={renderEmptyComponent}
+        ItemSeparatorComponent={renderSeparator}
+        style={styles.list}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={currentPosts.length === 0 ? styles.emptyListContainer : undefined}
+      />
+      {activeTab === 'home' && <FloatingActionButton onPress={handleNewPost} />}
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
+  container: {
+    flex: 1,
+    backgroundColor: AppTheme.colors.background,
+  },
+  header: {
+    paddingHorizontal: AppTheme.spacing.lg,
+    paddingTop: AppTheme.spacing.lg,
+    paddingBottom: AppTheme.spacing.md,
+    backgroundColor: AppTheme.colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: AppTheme.colors.divider,
+  },
+  headerTitle: {
+    fontSize: AppTheme.typography.fontSize.xxl,
+    fontWeight: '700',
+    color: AppTheme.colors.textPrimary,
+    marginBottom: AppTheme.spacing.xs,
+  },
+  headerSubtitle: {
+    fontSize: AppTheme.typography.fontSize.base,
+    color: AppTheme.colors.textSecondary,
+    lineHeight: AppTheme.typography.lineHeight.normal * AppTheme.typography.fontSize.base,
+  },
+  list: {
+    flex: 1,
+  },
+  separator: {
+    height: AppTheme.spacing.xs,
+  },
+  footer: {
+    padding: AppTheme.spacing.lg,
     alignItems: 'center',
-    gap: 8,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  footerSpacing: {
+    height: AppTheme.spacing.xl,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  loadingText: {
+    fontSize: AppTheme.typography.fontSize.sm,
+    color: AppTheme.colors.textSecondary,
+    marginTop: AppTheme.spacing.sm,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: AppTheme.spacing.xxxl,
+  },
+  emptyListContainer: {
+    flexGrow: 1,
+  },
+  emptyIcon: {
+    fontSize: 48,
+    marginBottom: AppTheme.spacing.lg,
+  },
+  emptyTitle: {
+    fontSize: AppTheme.typography.fontSize.xl,
+    fontWeight: '600',
+    color: AppTheme.colors.textPrimary,
+    marginBottom: AppTheme.spacing.sm,
+  },
+  emptyText: {
+    fontSize: AppTheme.typography.fontSize.base,
+    color: AppTheme.colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: AppTheme.typography.lineHeight.normal * AppTheme.typography.fontSize.base,
+  },
+  skeletonContainer: {
+    flex: 1,
+    paddingTop: AppTheme.spacing.sm,
   },
 });

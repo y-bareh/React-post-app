@@ -1,50 +1,158 @@
-# Welcome to your Expo app 👋
+# React Native Posts App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A modern React Native application built with Expo that displays posts from the GoRest API with a clean, user-friendly interface.
 
-## Get started
+## 🌟 Features
 
-1. Install dependencies
+### Core Functionality
+- **📱 Post Feed**: Browse posts from the GoRest API with infinite scroll
+- **💬 Comments**: View comments for each post with user information
+- **🔖 Save Posts**: Save favorite posts locally with persistent storage
+- **🏠 Navigation**: Simple two-tab navigation (Home/Saved)
+- **🔄 Pull-to-Refresh**: Refresh content with smooth animations
 
+### UI/UX Enhancements
+- **🎨 Modern Design**: Clean, card-based interface with consistent theming
+- **✨ Smooth Animations**: Entrance animations and interactive feedback
+- **📱 Responsive**: Optimized for mobile devices
+- **🌙 Theme Support**: Built-in light/dark theme system
+- **⚡ Haptic Feedback**: Touch feedback for better user experience
+- **💀 Skeleton Loading**: Beautiful loading states
+
+### Technical Features
+- **🔍 Robust API Integration**: Error handling and fallback mechanisms
+- **👤 User Management**: Handles missing users gracefully
+- **💾 Local Storage**: AsyncStorage for saved posts persistence
+- **🎯 Type Safety**: Full TypeScript implementation
+- **📊 Performance**: Optimized with React Native Reanimated
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js (v14 or later)
+- npm or yarn
+- Expo CLI
+- React Native development environment
+
+### Installation
+
+1. **Clone the repository**
    ```bash
-   npm install
+   git clone https://github.com/yourusername/react-native-posts-app.git
+   cd react-native-posts-app
    ```
 
-2. Start the app
+2. **Install dependencies**
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
 
+3. **Start the development server**
    ```bash
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+4. **Run on device/emulator**
+   - Scan QR code with Expo Go app (iOS/Android)
+   - Press `i` for iOS simulator
+   - Press `a` for Android emulator
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## 📱 Screenshots
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+[Add screenshots of your app here]
 
-## Get a fresh project
+## 🏗️ Project Structure
 
-When you're ready, run:
-
-```bash
-npm run reset-project
+```
+src/
+├── app/                    # Expo Router pages
+│   ├── (tabs)/            # Tab navigation
+│   │   ├── index.tsx      # Home screen
+│   │   └── _layout.tsx    # Tab layout
+│   ├── post-details.tsx   # Post details screen
+│   └── _layout.tsx        # Root layout
+├── components/            # Reusable components
+│   ├── PostCard.tsx       # Post display component
+│   ├── CommentCard.tsx    # Comment display component
+│   ├── SimpleHeader.tsx   # Navigation header
+│   ├── LoadingSpinner.tsx # Loading indicator
+│   ├── SkeletonLoader.tsx # Skeleton loading states
+│   └── FloatingActionButton.tsx
+├── constants/             # App constants
+│   ├── Theme.ts          # Design system
+│   └── Colors.ts         # Color definitions
+├── contexts/             # React contexts
+│   └── SavedPostsContext.tsx # Saved posts state
+├── hooks/                # Custom hooks
+│   └── useColorScheme.ts # Theme detection
+├── services/             # API services
+│   └── api.ts           # GoRest API integration
+└── utils/               # Utility functions
+    └── avatars.ts       # Avatar management
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## 🔧 Configuration
 
-## Learn more
+### API Configuration
+The app uses the GoRest API. No API key required for basic usage.
 
-To learn more about developing your project with Expo, look at the following resources:
+### Theme Customization
+Modify `constants/Theme.ts` to customize colors, typography, and spacing.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## 📚 Key Technologies
 
-## Join the community
+- **React Native** - Mobile app framework
+- **Expo** - Development platform and tools
+- **TypeScript** - Type safety and developer experience
+- **React Native Reanimated** - Smooth animations
+- **AsyncStorage** - Local data persistence
+- **Expo Router** - File-based navigation
+- **Expo Image** - Optimized image handling
+- **Expo Haptics** - Touch feedback
 
-Join our community of developers creating universal apps.
+## 🌟 Key Features Breakdown
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+### Post Management
+- Fetches posts from GoRest API
+- Handles pagination with infinite scroll
+- Graceful error handling for network issues
+- Fallback UI for missing user data
+
+### Save Functionality
+- Local storage using AsyncStorage
+- Instant save/unsave feedback
+- Persistent across app sessions
+- Visual indicators for saved state
+
+### Modern UI/UX
+- Card-based design with shadows
+- Smooth entrance animations
+- Loading skeletons for better perceived performance
+- Haptic feedback for interactions
+- Pull-to-refresh with custom animations
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- [GoRest API](https://gorest.co.in/) for providing the test API
+- [Expo](https://expo.dev/) for the amazing development platform
+- [React Native](https://reactnative.dev/) community for excellent documentation
+
+## 📧 Contact
+
+Your Name - your.email@example.com
+
+Project Link: [https://github.com/yourusername/react-native-posts-app](https://github.com/yourusername/react-native-posts-app)
